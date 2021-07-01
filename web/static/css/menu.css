@@ -1,0 +1,121 @@
+.tret {
+	
+	display: block;
+	color: black;
+	width: 160px;
+	height: 40px;
+	margin: -10px;
+	margin-left: -10px;
+	padding-left: 10px;
+	max-width: 200px;
+	font-family: trebuchet ms;
+
+}
+
+.submenu {
+
+	display: block;
+	margin: 0px;
+	margin-left: 10px;
+	margin-top: 25px; 
+	width: 120px;
+	font-size: 20px;
+	height: 5px;
+	color: black;
+
+	transition: all 0.2s ease-in-out;
+
+}
+
+.filler {
+
+	width: 170px;
+	height: 1000px;
+	background: #00d778;
+	margin: 10px;
+	margin-top: -150px;
+	margin-left: -10px;
+
+}
+
+body {
+
+	height: 10000px;
+	background: #1b522e;
+
+}
+
+.separator {
+
+	background-color: #5af67d;
+	height: 1000px;
+	width: 10px;
+	display: block;
+	margin-left: 160px;
+	margin-top: -1010px;
+	box-shadow: 3px 0px 3px rgba(0, 0, 0, 0.5);
+	z-index: 1;
+
+}
+
+.clr {
+
+	text-decoration: none;
+	color: black;
+
+}
+
+.submenu:hover {
+
+	margin-left: 20px;
+
+}
+
+.deco {
+
+	height: 18px;
+	background-color: #5af67d;
+	margin-left: -30px;
+	width: 7px;
+	position: fixed;
+	margin-top: -21px;
+
+}
+
+.field {
+
+	margin-left: -168px;
+	position: fixed;
+	margin-top: 3px;
+
+	transition: all 0.4s;
+	height: 100%;
+
+}
+
+.field:hover {
+
+	margin-left: 0px;
+
+}
+
+.copy {
+
+	position: absolute;
+	bottom: 0;
+
+}
+
+.right {
+
+	margin-top: -10px;
+	font-size: 10px;
+	color: rgba(0, 0, 0, .3);
+
+}
+
+.name {
+
+	margin-bottom: 5px;
+
+}

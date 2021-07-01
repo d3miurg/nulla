@@ -1,0 +1,5 @@
+*.exe
+**/__pycache__/
+*.sublime*
+web/static/upload/
+*.json

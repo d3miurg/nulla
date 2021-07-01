@@ -1,0 +1,16 @@
+html {
+
+	text-shadow: 1px 1px 3px rgba(27, 82, 46, 0.6);
+	font-family: source sans pro, calibri;
+	background-color: #1b522e;
+
+}
+
+@font-face {
+
+	font-family: source sans pro;
+	src: url(/static/fonts/SourceSansPro-Regular.otf) format("opentype");
+	font-weight: normal;
+	font-style: normal;
+
+}

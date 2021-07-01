@@ -1,0 +1,30 @@
+.mesg {
+
+	margin-left: 5px;
+	display: block;
+
+}
+
+.wrapper {
+
+
+	background-color: #00d778;
+	width: 101%;
+	height: 1%;
+	margin-top: -120px;
+
+}
+.normalizer {
+	
+	margin-top: -9px;
+    background: #00d778;
+    width: 101%;
+
+}
+
+.input {
+
+
+	border-radius: 5px;
+
+}

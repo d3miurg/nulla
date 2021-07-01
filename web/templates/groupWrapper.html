@@ -1,0 +1,22 @@
+{%extends "pageWrapper.html"%}
+
+{%block title%}{{groupName}}{%endblock%}
+
+{%block link%}
+
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename = 'css/main.css')}}">
+
+{%endblock%}
+
+{%block content%}
+	
+	<div class="container">
+		<h5 class="title">{{groupName}}</h5>
+		{%block hat%}
+		{%endblock%}
+	</div>
+
+	{%block materials%}
+	{%endblock%}
+
+{%endblock%}

@@ -1,0 +1,31 @@
+.header {
+
+	font-size: 28px;
+	margin-left: 5px;
+
+}
+
+.bg {
+
+	background-color: #00d778;
+	margin-left: 2px;
+	margin-top: -11px;
+	width: 101%;
+
+}
+
+.mt {
+
+	margin-top: -15px;
+	margin-left: 5px;
+
+}
+
+.upcon {
+
+	background-color: #00d778;
+	margin-top: -87px;
+	height: 100px;
+	width: 101%
+
+}
