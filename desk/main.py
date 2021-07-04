@@ -1,14 +1,55 @@
 import tkinter
-from functools import partial
+import threading
+import sys
+import functools
+import queue
 
 print('Соединение с Амино')
 import core
 
 print('Загрузка окна')
 
+root = tkinter.Tk()
+
+def update_chat(chat_id, chat_list, chat_queue):
+    global last_messages
+
+    if not chat_queue.empty():
+        message = chat_queue.get()
+        chat_list.insert(tkinter.END, message)
+
+    root.after(500, update_chat, chat_id, chat_list, chat_queue)
+
 def enter_chat(chat_id, buttons):
-    last_messages = core.get_messages(chat_id)
-    print(last_messages)
+    last_messages = core.get_last_messages(chat_id)
+
+    message_var = tkinter.StringVar()
+
+    chat_container = tkinter.LabelFrame(root)
+    chat_scroll = tkinter.Scrollbar(chat_container)
+    chat_list = tkinter.Listbox(chat_container, yscrollcommand = chat_scroll.set)
+    chat_scroll.config(command = chat_list.yview)
+
+    message_entry = tkinter.Entry(textvariable = message_var)
+    send_button = tkinter.Button(text = 'Отправить', command = functools.partial(core.send_message, chat_id, message_var))
+
+    chat_container.place(relx = .05, rely = .05, relheight = .6, relwidth = .9)
+    chat_list.place(relx = 0, rely = 0, relheight = 1, relwidth = .95)
+    chat_scroll.place(relx = .95, rely = 0, relheight = 1)
+    message_entry.place(relx = .05, rely = .7)
+    send_button.place(relx = .05, rely = .8)
+
+    for button in buttons:
+        button.place_forget()
+
+    for message in last_messages:
+        chat_list.insert(tkinter.END, message)
+
+    last_messages = queue.Queue()
+    pull_thread = threading.Thread(target = core.get_new_messages, args = [chat_id, last_messages], daemon = True)
+    pull_thread.start()
+
+    root.after(500, update_chat, chat_id, chat_list, last_messages)
 
 def enter_community(com_id, buttons):
     chats = core.enter_community(com_id)
@@ -19,11 +60,9 @@ def enter_community(com_id, buttons):
     chat_buttons = []
 
     for chat in chats:
-            chat_buttons.append(tkinter.Button(text = chat[0], command = partial(enter_chat, chat[1], buttons)))
+        chat_buttons.append(tkinter.Button(text = chat[0], command = functools.partial(enter_chat, chat[1], chat_buttons)))
 
     i = .1
-
-    print(chat_buttons)
 
     for button in chat_buttons:
         button.place(relx = .1, rely = i)
@@ -44,15 +83,13 @@ def login(email, password, error, page_elements):
         buttons = []
 
         for community in communities:
-            buttons.append(tkinter.Button(text = community[0], command = partial(enter_community, community[1], buttons)))
+            buttons.append(tkinter.Button(text = community[0], command = functools.partial(enter_community, community[1], buttons)))
 
         i = .1
 
         for button in buttons:
             button.place(relx = .1, rely = i)
             i += .1
-    
-root = tkinter.Tk()
 
 root.title('Nulla Client')
 root.geometry('500x500+100+100')
@@ -71,7 +108,7 @@ password_label = tkinter.Label(text = 'Пароль')
 login_page_list.append(password_label)
 password_entry = tkinter.Entry(textvariable = password_var, show = '*')
 login_page_list.append(password_entry)
-accept_button = tkinter.Button(text = 'Войти', command = partial(login, login_var, password_var, error_var, login_page_list))
+accept_button = tkinter.Button(text = 'Войти', command = functools.partial(login, login_var, password_var, error_var, login_page_list))
 login_page_list.append(accept_button)
 error_label = tkinter.Label(textvariable = error_var, fg = 'red')
 login_page_list.append(error_label)
@@ -86,3 +123,5 @@ error_label.place(relx=.1, rely=.5)
 root.mainloop()
 
 print('Выход (закрытие окна)')
+
+core.stop()
