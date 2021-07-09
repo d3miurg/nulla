@@ -5,25 +5,27 @@ import functools
 import queue
 
 print('Соединение с Амино')
-import core
+from nullaLowLevel import core
+
+core.start()
 
 print('Загрузка окна')
 
 root = tkinter.Tk()
 
-def update_chat(chat_id, chat_list, chat_queue):
+def update_chat(chat_id, chat_list, message_generator):
     global last_messages
 
-    if not chat_queue.empty():
-        message = chat_queue.get()
+    message = next(message_generator)
+
+    if not (message is None):
         chat_list.insert(tkinter.END, message)
 
-    root.after(500, update_chat, chat_id, chat_list, chat_queue)
+    root.after(150, update_chat, chat_id, chat_list, message_generator)
 
 def enter_chat(chat_id, buttons):
-    last_messages = core.get_last_messages(chat_id)
-
     message_var = tkinter.StringVar()
+    chat_error_var = tkinter.StringVar()
 
     chat_container = tkinter.LabelFrame(root)
     chat_scroll = tkinter.Scrollbar(chat_container)
@@ -31,7 +33,8 @@ def enter_chat(chat_id, buttons):
     chat_scroll.config(command = chat_list.yview)
 
     message_entry = tkinter.Entry(textvariable = message_var)
-    send_button = tkinter.Button(text = 'Отправить', command = functools.partial(core.send_message, chat_id, message_var))
+    send_button = tkinter.Button(text = 'Отправить', command = functools.partial(core.send_message, chat_id, tk_var = message_var, tk_error = chat_error_var))
+    chat_error_label = tkinter.Label(textvariable = chat_error_var)
 
     chat_container.place(relx = .05, rely = .05, relheight = .6, relwidth = .9)
     chat_list.place(relx = 0, rely = 0, relheight = 1, relwidth = .95)
@@ -42,14 +45,9 @@ def enter_chat(chat_id, buttons):
     for button in buttons:
         button.place_forget()
 
-    for message in last_messages:
-        chat_list.insert(tkinter.END, message)
+    message_generator = core.return_message(chat_id)
 
-    last_messages = queue.Queue()
-    pull_thread = threading.Thread(target = core.get_new_messages, args = [chat_id, last_messages], daemon = True)
-    pull_thread.start()
-
-    root.after(500, update_chat, chat_id, chat_list, last_messages)
+    root.after(150, update_chat, chat_id, chat_list, message_generator)
 
 def enter_community(com_id, buttons):
     chats = core.enter_community(com_id)

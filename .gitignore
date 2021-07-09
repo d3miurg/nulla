@@ -1,4 +1,4 @@
-*.exe
+*.lnk
 **/__pycache__/
 *.sublime*
 web/static/upload/
