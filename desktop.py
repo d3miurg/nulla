@@ -118,6 +118,8 @@ password_entry.place(relx=.1, rely=.4)
 accept_button.place(relx=.1, rely=.6)
 error_label.place(relx=.1, rely=.5)
 
+core.tk_root = root
+
 root.mainloop()
 
 print('Выход (закрытие окна)')

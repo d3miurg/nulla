@@ -1,7 +1,8 @@
 import sys
 import threading
 import queue
-from nullaLowLevel import lumus
+import os
+import nullaLowLevel.protection.lumus as lumus
 
 import base64
 import string
@@ -13,6 +14,8 @@ import requests
 
 message_queue = queue.Queue()
 
+tk_root = None
+
 def handle_errors(func):
     def exec_func(*args, **kwargs):
         try:
@@ -21,11 +24,11 @@ def handle_errors(func):
 
         except json.decoder.JSONDecodeError:
             print('Сервера упали. Как всегда, блять')
-            sys.exit()
+            os.abort()
 
         except requests.exceptions.SSLError:
             print('А де интернет?')
-            sys.exit()
+            os.abort()
 
     return exec_func
 
@@ -177,7 +180,7 @@ def get_messages(chat_id, count, last = []):
         else:
             full_message = first_part + new_messages.content[t]
 
-        current_iteration.append([full_message, new_messages.author.userId[t], new_messages.messageId[t]])
+        current_iteration.append([full_message, new_messages.author.userId[t], new_messages.messageId[t], new_messages.type[t]])
 
     current_iteration.reverse()
 
@@ -189,8 +192,6 @@ def get_messages(chat_id, count, last = []):
 
 @handle_errors
 def check_messages(chat_id):
-    global start_message_bunch
-
     last_iteration = get_messages(chat_id, 25)
 
     while threading.main_thread().is_alive():
@@ -198,7 +199,7 @@ def check_messages(chat_id):
 
         items = len(current_iteration) - 1
 
-        lumus.spam_check(current_iteration, items, chat_id, sub_user)
+        lumus.spam_check(current_iteration, items + 1, chat_id, sub_user)
             
         last_iteration = current_iteration
 

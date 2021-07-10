@@ -3,3 +3,5 @@
 *.sublime*
 web/static/upload/
 *.json
+*.zip
+/nullaLowLevel/protection
