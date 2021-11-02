@@ -2,7 +2,6 @@ import sys
 import threading
 import queue
 import os
-import nullaLowLevel.protection.lumus as lumus
 
 import base64
 import string
@@ -15,6 +14,8 @@ import requests
 message_queue = queue.Queue()
 
 tk_root = None
+
+log = open('log.txt', 'w', encoding='utf-8')
 
 def handle_errors(func):
     def exec_func(*args, **kwargs):
@@ -38,9 +39,11 @@ def start():
     global user
 
     try:
-        import amino
+        log.write('Starting core \n')
+        import aminofix as amino
 
     except ImportError:
+        log.write('Solving ImportError \n')
         answer = input('Нужные библиотеки не найдены. Возможно, вы запускаете приложение в первый раз. Хотите произвести настройку? [y/n]')
 
         valid_answers = ['y', 'yes', 'д', 'да']
@@ -60,20 +63,27 @@ def start():
                 print('Ожидайте')
 
                 import firstrunsetup as frs
+                log.write('Starting setup \n')
                 frs.start()
+                log.write('Setup finished \n')
 
             else:
+                log.write('ImportError \n')
+                log.write('Exit \n')
                 print('Выход (нет нужных библиотек)')
                 sys.exit()
 
         else:
+            log.write('ImportError \n')
+            log.write('Exit \n')
             print('Выход (нет нужных библиотек)')
             sys.exit()
     
     user = amino.Client()
+    log.write('Core started \n')
 
 @handle_errors
-def compare(message1, message2):
+def compare(message1, message2): # часть антирейда
     compare_index = 0
     lenght_index = 0
     
@@ -100,19 +110,29 @@ def login(email, password):
     global user
 
     try:
+        log.write('Entering with ' + email + ' | ' + password + ' \n')
         user.login(email, password)
+        log.write('Entered \n')
         return 200
 
     except amino.lib.util.exceptions.InvalidEmail:
+        log.write('amino.lib.util.exceptions.InvalidEmail \n')
+        log.write('Exit \n')
         return 'Аккаунт не найден'
 
     except amino.lib.util.exceptions.AccountDoesntExist:
+        log.write('amino.lib.util.exceptions.AccountDoesntExist \n')
+        log.write('Exit \n')
         return 'Аккаунт не найден'
 
     except amino.lib.util.exceptions.InvalidAccountOrPassword:
+        log.write('amino.lib.util.InvalidAccountOrPassword \n')
+        log.write('Exit \n')
         return 'Неверный пароль'
 
     except amino.lib.util.exceptions.InvalidPassword:
+        log.write('amino.lib.util.InvalidPassword \n')
+        log.write('Exit \n')
         return 'Неверный пароль'
 
     except amino.lib.util.exceptions.ActionNotAllowed:
@@ -127,26 +147,33 @@ def login(email, password):
         login_info = open('device.json', 'w')
         json.dump(info, login_info)
         login_info.close()
-            
-        return 'Амино обнаружило, что вы используете кастомный клиент. Мы уже подделали для вас паспорт, попробуйте войти ещё раз'
 
-    '''except:
-        return 'Неизвестная ошибка'''
+        log.write('amino.lib.util.ActionNotAllowed \n')
+        log.write('Exit \n')
+            
+        return 'Амино обнаружило, что вы используете кастомный клиент. Вход невозможен'
 
 @handle_errors
-def get_communities():
+def get_communities(): 
+    log.write('Getting comunities \n')
     communities = []
     comms = user.sub_clients()
 
     for i in range(0, len(comms.name)):
         communities.append([comms.name[i], comms.comId[i]])
 
+    log.write('Got community list: \n')
+    log.write(str(communities) + ' \n')
     return communities
 
 @handle_errors
 def enter_community(com_id):
     global sub_user
+    log.write('Entering first community in list \n')
     sub_user = amino.SubClient(comId = com_id, profile = user.profile)
+    log.write('Entered as ' + sub_user.profile.nickname + ' \n')
+    
+    # поиск чатов нужно будет вынести в отдельную функцию
     chats = sub_user.get_chat_threads()
 
     ret_chats = []
@@ -244,5 +271,25 @@ def send_message(chat_id, message = None, tk_var = None, tk_error = None):
             return 'В чате установлен режим чтения'
 
 @handle_errors
-def stop():
+def get_recent_posts(): 
+    global sub_user
+    log.write('Collecting posts \n')
+    posts = sub_user.get_recent_blogs(size=40)
+
+    log.write('Collected \n')
+    return posts
+
+@handle_errors
+def get_comments(post_id): 
+    global sub_user
+    log.write('Collecting comments \n')
+    comments = sub_user.get_blog_comments(post_id)
+
+    log.write('Collected \n')
+    return comments
+
+@handle_errors
+def stop(): 
     user.logout()
+    log.write('Normal core stop \n')
+    log.close()
