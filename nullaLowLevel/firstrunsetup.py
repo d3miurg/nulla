@@ -5,7 +5,7 @@ import platform
 def start():
     platform_info = platform.platform()
     if 'Windows' in platform_info:
-        status = os.system('python -m pip install amino.fix')
+        status = os.system('python -m pip install amino.py json_minify')
         if status != 0:
             print('Выход (невозможно использовать pip)')
             sys.exit()
@@ -14,26 +14,19 @@ def start():
         print('Установка пакетов на Linux-платформах может потребовать рут-права')
         
         if 'debian' in platform_info:
-            status = os.system('pip3 install amino.fix')
+            status = os.system('pip3 install amino.py json_minify')
 
             if status != 0:
-                print('Невозможно использовать pip. Установка')
-                sub_status = os.system('sudo apt install python3-pip')
-
-                if sub_status != 0:
-                    print('Выход (невозможно установить pip)')
-                    sys.exit()
+                print('Выход (невозможно установить pip)')
+                sys.exit()
 
         else:
-            status = os.system('pip3 install amino.fix')
+            status = os.system('pip3 install amino.py json_minify')
 
+            print(status)
             if status != 0:
-                print('Невозможно использовать pip. Установка')
-                sub_status = os.system('pkg install python3-pip')
-
-                if sub_status != 0:
-                    print('Выход (невозможно установить pip)')
-                    sys.exit()
+                print('Выход (невозможно установить pip)')
+                sys.exit()
     
     for directory in sys.path:
         if 'site-packages' in directory:
@@ -45,4 +38,4 @@ def start():
             file.write(data)
             file.close()
 
-    cont = input()
+    cont = input('Установка завершена')

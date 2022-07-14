@@ -20,8 +20,11 @@ try:
         if answer in valid_answers:
             print('Ожидайте')
 
-            import firstrunsetup as frs
+            import nullaLowLevel.firstrunsetup as frs
             frs.start()
+            import amino
+            import getpass
+            import warnings
 
         elif answer in help_answers:
             print('Если вы согласитесь, приложение установит библиотеку для работы с Амино и фиксы для неё')
@@ -32,6 +35,9 @@ try:
 
                 import firstrunsetup as frs
                 frs.start()
+                import amino
+                import getpass
+                import warnings
 
             else:
                 print('Выход')
@@ -39,7 +45,7 @@ try:
 
         else:
             print('Выход')
-        sys.exit()
+            sys.exit()
 
     tab_str = '    '
 
@@ -123,6 +129,7 @@ try:
     while main_flag:
         print('0. Обновить')
         print('1. Отправить сообщение')
+        print('2. Выйти')
         stat = int(input())
 
         if stat == 0:
@@ -152,6 +159,9 @@ try:
 
     user.logout()
     
+        elif stat == 2:
+            core.stop()
+            sys.exit()
 
 except json.decoder.JSONDecodeError:
     print('Сервера упали. Как всегда, блять')
