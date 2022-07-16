@@ -9,7 +9,6 @@ import random
 from hashlib import sha1
 
 import json
-import requests
 
 message_queue = queue.Queue()
 
@@ -37,10 +36,12 @@ def handle_errors(func):
 def start():
     global amino
     global user
+    global requests
 
     try:
         log.write('Starting core \n')
-        import aminofix as amino
+        import amino
+        import requests
 
     except ImportError:
         log.write('Solving ImportError \n')
@@ -52,7 +53,7 @@ def start():
         if answer in valid_answers:
             print('Ожидайте')
 
-            import firstrunsetup as frs
+            import nullaLowLevel.firstrunsetup as frs
             frs.start()
 
         elif answer in help_answers:

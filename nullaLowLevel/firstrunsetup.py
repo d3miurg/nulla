@@ -5,7 +5,7 @@ import platform
 def start():
     platform_info = platform.platform()
     if 'Windows' in platform_info:
-        status = os.system('python -m pip install amino.py json_minify')
+        status = os.system('python -m pip install amino.py json_minify requsts')
         if status != 0:
             print('Выход (невозможно использовать pip)')
             sys.exit()
@@ -14,14 +14,14 @@ def start():
         print('Установка пакетов на Linux-платформах может потребовать рут-права')
         
         if 'debian' in platform_info:
-            status = os.system('pip3 install amino.py json_minify')
+            status = os.system('pip3 install amino.py json_minify requests')
 
             if status != 0:
                 print('Выход (невозможно установить pip)')
                 sys.exit()
 
         else:
-            status = os.system('pip3 install amino.py json_minify')
+            status = os.system('pip3 install amino.py json_minify requests')
 
             print(status)
             if status != 0:
