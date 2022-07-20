@@ -18,7 +18,7 @@ def handle_errors(func):
 
         except requests.exceptions.SSLError:
             response['status'] = 'А де интернет?'
-            
+        #кажется, я сделал что-то неправильное, но оно работает 
         return JsonResponse(response)
 
     return exec_func

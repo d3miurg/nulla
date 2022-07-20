@@ -131,7 +131,7 @@ def login(email, password):
         log.write('Exit \n')
         return 'Неверный пароль'
 
-    except amino.lib.util.exceptions.InvalidPassword:
+    except amino.lib.util.exceptions.InvalidAccountOrPassword:
         log.write('amino.lib.util.InvalidPassword \n')
         log.write('Exit \n')
         return 'Неверный пароль'
@@ -157,15 +157,6 @@ def login(email, password):
 @handle_errors
 def get_communities(): 
     log.write('Getting comunities \n')
-    communities = []
-    comms = user.sub_clients()
-
-    for i in range(0, len(comms.name)):
-        communities.append([comms.name[i], comms.comId[i]])
-
-    log.write('Got community list: \n')
-    log.write(str(communities) + ' \n')
-    return communities
 
 @handle_errors
 def enter_community(com_id):
