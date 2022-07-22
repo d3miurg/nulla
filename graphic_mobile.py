@@ -35,7 +35,7 @@ def swapBuffers():
     for n in backBuffer:
         n.show()    
 
-#все эти маленькие классы нужно объединить в один
+#все эти классы-потоки нужно объединить в один
 class logger(QThread):
     def __init__(self, login, password):
         super().__init__()
@@ -57,8 +57,8 @@ class coreConnector(QThread):
         
         swapBuffers()   
 
-class loginForm(QFrame, QThread):
-    def __init__(self, parent):
+class loginFormer(QFrame, QThread):
+    def __init__(self, parent=None):
         super().__init__(parent)
         
         self.loginField = QLineEdit(self)
@@ -69,7 +69,8 @@ class loginForm(QFrame, QThread):
         self.passwordField.setEchoMode(QLineEdit.Password)
         self.passwordField.resize(350, 50)
         self.passwordField.move(50, 120)
-
+        
+        self.loginAction = logger(loginField.text())
         self.loginButton = QPushButton('Войти', self)
         self.loginButton.resize(self.loginButton.sizeHint())
         self.loginButton.move(50, 190)
@@ -161,8 +162,8 @@ loadLabel.resize(350, 50)
 loadLabel.move(50, 50)
 loadLabel.show()
 
-loginFormObj = loginForm(mainWindow)
-drawToBackBuffer(loginFormObj)
+loginForm = loginFormer(mainWindow)
+drawToBackBuffer(loginForm)
 
 connectionThread = coreConnector()
 
