@@ -1,5 +1,7 @@
 #для начала, реализуй чаты, сообщества и посты
 #все форы переписать
+#вынести универсальные классы в отдельный файл
+#но это когда появится комп
 import tkinter
 import functools
 import queue
@@ -18,7 +20,6 @@ global core
 
 app = QApplication(sys.argv)
 mainWindow = QWidget()
-mainWindow.show()
 
 #не нашёл реализации двойного буфера в pyqt, поэтому сделал его сам
 #не уверен, что сделал правильную вещь
@@ -106,10 +107,10 @@ class loginFormer(QFrame):
         self.loginButton.clicked.connect(self.login)
         self.loginButton.resize(self.loginButton.sizeHint())
         self.loginButton.move(50, 190)
-        
-        self.loginAction = logger(self.loginField.text(), self.passwordField.text())
     
     def login(self):
+        self.loginAction = logger(self.loginField.text(), self.passwordField.text())
+        
         statusLabel = QLabel(self)
         statusLabel.setText('Вход в аккаунт')
         statusLabel.resize(statusLabel.sizeHint())
@@ -175,19 +176,22 @@ def enter_community(com_id, buttons):
 #root.title('Nulla Client')
 #root.geometry('500x500+100+100')
 
-loadLabel = QLabel(mainWindow)
-loadLabel.setText('Соединение с Амино')
-loadLabel.resize(350, 50)
-loadLabel.move(50, 50)
-loadLabel.show()
+if __name__ == '__main__':
+    mainWindow.show()
+    loadLabel = QLabel(mainWindow)
+    loadLabel.setText('Соединение с Амино')
+    loadLabel.resize(350, 50)
+    loadLabel.move(50, 50)
+    loadLabel.show()
 
-loginForm = loginFormer(mainWindow)
-drawToBackBuffer(loginForm)
+    loginForm = loginFormer(mainWindow)
+    drawToBackBuffer(loginForm)
 
-connectionThread = coreConnector()
+    connectionThread = coreConnector()
 
-connectionThread.start()
-app.exec()
-
-core.stop()
+    connectionThread.start()
+    
+    app.exec()
+    core.stop()
+    
 sys.exit()
