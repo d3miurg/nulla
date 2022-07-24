@@ -1,3 +1,8 @@
+
+
+#сделать запрос по одной штуке, реализовав таким образом промежуточные результаты
+#а стоит ли?
+#а потом переписать библиотеку, чтобы избавиться от этого костыля
 import sys
 import threading
 import queue
@@ -111,7 +116,7 @@ def login(email, password):
     global user
 
     try:
-        log.write('Entering with ' + email + ' | ' + password + ' \n')
+        log.write('Entering')
         user.login(email, password)
         log.write('Entered \n')
         return 200
