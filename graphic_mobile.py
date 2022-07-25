@@ -21,25 +21,14 @@ global core
 app = QApplication(sys.argv)
 mainWindow = QWidget()
 
-#не нашёл реализации двойного буфера в pyqt, поэтому сделал его сам
-#не уверен, что сделал правильную вещь
-backBuffer = []
-
-#стоит подумать над названием
-def drawToBackBuffer(*elements):
+def updateScreen(*elements):
+    for n in mainWindow.children():
+        print(n)
+        n.hide()
+        
     for n in elements:
-        backBuffer.append(n)
-
-#нужно поправить
-#кажется, тут я хотел избежать мусора в буфере
-def swapBuffers():
-    moveToBuffer = mainWindow.children()
-    tempBuff = []
-    for n in moveToBuffer:
-        tempBuff.append(n)
-    
-    for n in backBuffer:
-        n.show()    
+        print(n)
+        n.show()
 
 #все эти классы-потоки нужно объединить в один
 #сделав QThread более похожим на threading.Thread
@@ -51,30 +40,37 @@ class chatFormer(QThread):
         self.communityId = communityId
     
     def run(self):
-        pass
+        print('chat')
         
 class logger(QThread):
+    global backBuffer
+    
     def __init__(self, login, password):
         super().__init__()
         self.login = login
         self.password = password
     
-    #ты доделаешь этот метод, нет?
     def run(self):
+        print('enter thread')
         core.login(self.login, self.password)
         communities = core.get_communities()
+        print('process')
         
         yOffset = 50
+        buttons =[]
         for community in communities:
+            print('cycle')
             self.chatThread = chatFormer(community[1])
             communityButton = QPushButton(community[0],mainWindow)
-            communityButton.clicked.connect(self.chatThread.start())
+            communityButton.clicked.connect(self.chatThread.start)
             communityButton.resize(50, 150)
             communityButton.move(50, yOffset)
-            drawToBackBuffer(communityButton)
+            buttons.append(communityButton)
             yOffset += 50
-            
-        swapBuffers()
+        
+        print('end')
+        updateScreen(*buttons)
+        print('swap')
 
 class coreConnector(QThread):
     def __init__(self):
@@ -86,7 +82,8 @@ class coreConnector(QThread):
         from nullaLowLevel import core
         core.start()
         
-        swapBuffers()   
+        loginForm = loginFormer(mainWindow)
+        updateScreen(loginForm)
 
 #тут начинаются классы форм
 #возможно, он не нужен
@@ -111,11 +108,11 @@ class loginFormer(QFrame):
     def login(self):
         self.loginAction = logger(self.loginField.text(), self.passwordField.text())
         
-        statusLabel = QLabel(self)
-        statusLabel.setText('Вход в аккаунт')
-        statusLabel.resize(statusLabel.sizeHint())
-        statusLabel.move(50, 260)
-        statusLabel.show()
+        self.statusLabel = QLabel(self)
+        self.statusLabel.setText('Вход в аккаунт')
+        self.statusLabel.resize(self.statusLabel.sizeHint())
+        self.statusLabel.move(50, 260)
+        self.statusLabel.show()
         
         self.loginAction.start()
     
@@ -184,14 +181,11 @@ if __name__ == '__main__':
     loadLabel.move(50, 50)
     loadLabel.show()
 
-    loginForm = loginFormer(mainWindow)
-    drawToBackBuffer(loginForm)
-
     connectionThread = coreConnector()
-
     connectionThread.start()
     
     app.exec()
+    
     core.stop()
     
 sys.exit()
