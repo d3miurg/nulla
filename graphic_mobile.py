@@ -9,6 +9,7 @@ import queue
 import sys
 
 from PyQt5.QtCore import QThread
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QFrame
@@ -20,15 +21,6 @@ global core
 
 app = QApplication(sys.argv)
 mainWindow = QWidget()
-
-def updateScreen(*elements):
-    for n in mainWindow.children():
-        print(n)
-        n.hide()
-        
-    for n in elements:
-        print(n)
-        n.show()
 
 #все эти классы-потоки нужно объединить в один
 #сделав QThread более похожим на threading.Thread
@@ -72,19 +64,6 @@ class logger(QThread):
         updateScreen(*buttons)
         print('swap')
 
-class coreConnector(QThread):
-    def __init__(self):
-        super().__init__()
-    
-    def run(self):
-        global core
-        
-        from nullaLowLevel import core
-        core.start()
-        
-        loginForm = loginFormer(mainWindow)
-        updateScreen(loginForm)
-
 #тут начинаются классы форм
 #возможно, он не нужен
 class loginFormer(QFrame):
@@ -105,17 +84,38 @@ class loginFormer(QFrame):
         self.loginButton.resize(self.loginButton.sizeHint())
         self.loginButton.move(50, 190)
     
+    def connectionFound(self):
+        self.show()
+    
     def login(self):
-        self.loginAction = logger(self.loginField.text(), self.passwordField.text())
+        loginAction = logger(self.loginField.text(), self.passwordField.text())
         
         self.statusLabel = QLabel(self)
         self.statusLabel.setText('Вход в аккаунт')
         self.statusLabel.resize(self.statusLabel.sizeHint())
         self.statusLabel.move(50, 260)
         self.statusLabel.show()
-        
-        self.loginAction.start()
+        loginAction.start()
+
+class coreConnector(QThread):
+    global mainWindow
     
+    ended = pyqtSignal()
+    
+    def __init__(self, formToShow):
+        super().__init__()
+        
+        self.toShow = formToShow
+        self.ended.connect(self.toShow.connectionFound)
+    
+    def run(self):
+        global core
+        
+        from nullaLowLevel import core
+        core.start()
+        
+        self.ended.emit()
+            
 def update_chat(chat_id, chat_list, message_generator):
     global last_messages
 
@@ -181,7 +181,9 @@ if __name__ == '__main__':
     loadLabel.move(50, 50)
     loadLabel.show()
 
-    connectionThread = coreConnector()
+    loginForm = loginFormer(mainWindow)
+
+    connectionThread = coreConnector(loginForm)
     connectionThread.start()
     
     app.exec()
