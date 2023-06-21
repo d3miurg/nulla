@@ -2,7 +2,8 @@ import sys
 import threading
 import queue
 import os
-import nullaLowLevel.protection.lumus as lumus
+# import nullaLowLevel.protection.lumusClient as lumusClient
+# import nullaLowLevel.protection.lumusServer as lumusServer
 
 import base64
 import string
@@ -12,9 +13,16 @@ from hashlib import sha1
 import json
 import requests
 
+# import certifi
+# import ssl
+# urlopen(request, context=ssl.create_default_context(cafile=certifi.where()))
+
 message_queue = queue.Queue()
 
+safe_messages = []
+
 tk_root = None
+
 
 def handle_errors(func):
     def exec_func(*args, **kwargs):
@@ -32,16 +40,20 @@ def handle_errors(func):
 
     return exec_func
 
+
 @handle_errors
 def start():
     global amino
     global user
+    global main
 
     try:
         import amino
 
     except ImportError:
-        answer = input('Нужные библиотеки не найдены. Возможно, вы запускаете приложение в первый раз. Хотите произвести настройку? [y/n]')
+        answer = input('Нужные библиотеки не найдены',
+                       'Возможно, вы запускаете приложение в первый раз',
+                       'Хотите произвести настройку? [y/n]')
 
         valid_answers = ['y', 'yes', 'д', 'да']
         help_answers = ['h', 'help', 'п', 'помощь']
@@ -53,7 +65,9 @@ def start():
             frs.start()
 
         elif answer in help_answers:
-            print('Если вы согласитесь, приложение установит библиотеку для работы с Амино и фиксы для неё')
+            print('Если вы согласитесь,',
+                  'Приложение установит библиотеку для работы с Амино',
+                  'И фиксы для неё')
             answer = input()
 
             if answer in valid_answers:
@@ -69,14 +83,13 @@ def start():
         else:
             print('Выход (нет нужных библиотек)')
             sys.exit()
-    
     user = amino.Client()
+
 
 @handle_errors
 def compare(message1, message2):
     compare_index = 0
     lenght_index = 0
-    
     if len(message1) > len(message2):
         short_message = message2
         long_message = message1
@@ -94,6 +107,7 @@ def compare(message1, message2):
     ratio = (compare_index * 100) / lenght_index
 
     return ratio
+
 
 @handle_errors
 def login(email, password):
@@ -120,18 +134,32 @@ def login(email, password):
         info = json.load(login_info)
         login_info.close()
 
-        origin_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k = 69))
-        new_id = '01' + (MetaSpecial := sha1(origin_string.encode("utf-8"))).hexdigest() + sha1(bytes.fromhex('01') + MetaSpecial.digest() + base64.b64decode("6a8tf0Meh6T4x7b0XvwEt+Xw6k8=")).hexdigest()
+#       Я уже и забыл, что за человек это придумал, но спасибо ему
+#       А забыл я его, потому что изначально он сделал всё крайне непонятно
+        random_range = string.ascii_uppercase + string.digits
+        random_string = random.choices(random_range, k=69)
+        origin_string = ''.join(random_string)
+
+        lone_hex = bytes.fromhex('01')
+        strange_code = '6a8tf0Meh6T4x7b0XvwEt+Xw6k8='
+        strange_decode = base64.b64decode(strange_code)
+        string_code = sha1(origin_string.encode("utf-8"))
+        string_hex = string_code.hexdigest()
+        complex_code = sha1(lone_hex + string_code.digest() + strange_decode)
+        complex_hex = complex_code.hexdigest()
+
+        new_id = '01' + string_hex + complex_hex
+
         info['device-id'] = new_id
 
         login_info = open('device.json', 'w')
         json.dump(info, login_info)
         login_info.close()
-            
-        return 'Амино обнаружило, что вы используете кастомный клиент. Мы уже подделали для вас паспорт, попробуйте войти ещё раз'
 
-    '''except:
-        return 'Неизвестная ошибка'''
+        return ''.join('Амино обнаружило, что используется кастомный клиент,',
+                       'но мы уже подделали для вас паспорт,',
+                       'попробуйте войти ещё раз')
+
 
 @handle_errors
 def get_communities():
@@ -143,10 +171,11 @@ def get_communities():
 
     return communities
 
+
 @handle_errors
 def enter_community(com_id):
     global sub_user
-    sub_user = amino.SubClient(comId = com_id, profile = user.profile)
+    sub_user = amino.SubClient(comId=com_id, profile=user.profile)
     chats = sub_user.get_chat_threads()
 
     ret_chats = []
@@ -160,14 +189,16 @@ def enter_community(com_id):
 
     return ret_chats
 
+
 @handle_errors
-def get_messages(chat_id, count, last = []):
+def get_messages(chat_id, count, last=[]):
     global sub_user
+    non_text = 'НЕ ТЕКСТОВОЕ СООБЩЕНИЕ ТИПА '
 
     new_messages = sub_user.get_chat_messages(chat_id, count)
 
     if count != len(new_messages.content):
-            count = len(new_messages.content) - 1
+        count = len(new_messages.content) - 1
 
     current_iteration = []
 
@@ -175,12 +206,16 @@ def get_messages(chat_id, count, last = []):
         first_part = new_messages.author.nickname[t] + ': '
 
         if new_messages.content[t] is None:
-            full_message = first_part + 'НЕ ТЕКСТОВОЕ СООБЩЕНИЕ ТИПА ' + str(new_messages.type[t])
+            full_message = first_part + non_text + str(new_messages.type[t])
 
         else:
             full_message = first_part + new_messages.content[t]
 
-        current_iteration.append([full_message, new_messages.author.userId[t], new_messages.messageId[t], new_messages.type[t]])
+        current_iteration.append([full_message,
+                                  new_messages.author.userId[t],
+                                  new_messages.messageId[t],
+                                  new_messages.type[t]
+                                  ])
 
     current_iteration.reverse()
 
@@ -190,6 +225,7 @@ def get_messages(chat_id, count, last = []):
 
     return current_iteration
 
+
 @handle_errors
 def check_messages(chat_id):
     last_iteration = get_messages(chat_id, 25)
@@ -197,26 +233,30 @@ def check_messages(chat_id):
     while threading.main_thread().is_alive():
         current_iteration = get_messages(chat_id, 4, last_iteration)
 
-        items = len(current_iteration) - 1
+        lumusServer.spam_check(current_iteration, chat_id, sub_user)
 
-        lumus.spam_check(current_iteration, items + 1, chat_id, sub_user)
-            
         last_iteration = current_iteration
+
 
 @handle_errors
 def return_message(chat_id):
-    listner = threading.Thread(target = check_messages, args = [chat_id])
+    listner = threading.Thread(target=check_messages, args=[chat_id])
     listner.start()
-        
+
+    repr_file = open('chat_repr.txt', 'w', encoding='utf-8')
+
     while True:
         if not message_queue.empty():
-            yield message_queue.get()
+            message = message_queue.get()
+            repr_file.write(message + '\n')
+            yield message
 
         else:
             yield None
 
+
 @handle_errors
-def send_message(chat_id, message = None, tk_var = None, tk_error = None):
+def send_message(chat_id, message=None, tk_var=None, tk_error=None):
     try:
         global sub_user
         send_ready = ''
@@ -242,6 +282,17 @@ def send_message(chat_id, message = None, tk_var = None, tk_error = None):
 
         else:
             return 'В чате установлен режим чтения'
+
+
+@handle_errors
+def push_read(chat_id):
+    sub_user.edit_chat(chat_id, viewOnly=True)
+
+
+@handle_errors
+def push_write(chat_id):
+    sub_user.edit_chat(chat_id, viewOnly=False)
+
 
 @handle_errors
 def stop():

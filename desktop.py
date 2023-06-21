@@ -1,17 +1,14 @@
-import tkinter
+from PyQt6 import QtCore
+from PyQt6 import QtWidgets
+from PyQt6 import QtGui
 import threading
 import sys
-import functools
 import queue
 
 print('Соединение с Амино')
 from nullaLowLevel import core
 
 core.start()
-
-print('Загрузка окна')
-
-root = tkinter.Tk()
 
 def update_chat(chat_id, chat_list, message_generator):
     global last_messages
@@ -36,11 +33,14 @@ def enter_chat(chat_id, buttons):
     send_button = tkinter.Button(text = 'Отправить', command = functools.partial(core.send_message, chat_id, tk_var = message_var, tk_error = chat_error_var))
     chat_error_label = tkinter.Label(textvariable = chat_error_var)
 
+    view_button = tkinter.Button(text = 'Только чтение', command = functools.partial(core.push_read, chat_id))
+
     chat_container.place(relx = .05, rely = .05, relheight = .6, relwidth = .9)
     chat_list.place(relx = 0, rely = 0, relheight = 1, relwidth = .95)
     chat_scroll.place(relx = .95, rely = 0, relheight = 1)
     message_entry.place(relx = .05, rely = .7)
     send_button.place(relx = .05, rely = .8)
+    view_button.place(relx = .5, rely = .7)
 
     for button in buttons:
         button.place_forget()
@@ -89,10 +89,19 @@ def login(email, password, error, page_elements):
             button.place(relx = .1, rely = i)
             i += .1
 
-root.title('Nulla Client')
-root.geometry('500x500+100+100')
 
-login_var = tkinter.StringVar()
+print('Загрузка окна')
+app = QtWidgets.QApplication([])
+mainWindow = QtWidgets.QWidget()
+mainWindow.setGeometry(100, 100, 500, 500)
+mainWindow.setWindowTitle('Nulla Client')
+mainWindow.show()
+app.exec()
+
+print('Выход (закрытие окна)')
+sys.exit(core.stop())
+
+'''login_var = tkinter.StringVar()
 password_var = tkinter.StringVar()
 error_var = tkinter.StringVar()
 
@@ -120,8 +129,6 @@ error_label.place(relx=.1, rely=.5)
 
 core.tk_root = root
 
-root.mainloop()
+print('Загрузка завешнена')
 
-print('Выход (закрытие окна)')
-
-core.stop()
+root.mainloop()'''

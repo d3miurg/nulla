@@ -20,7 +20,7 @@ try:
         if answer in valid_answers:
             print('Ожидайте')
 
-            import firstrunsetup as frs
+            import nullaLowLevel.firstrunsetup as frs
             frs.start()
 
         elif answer in help_answers:
@@ -30,7 +30,7 @@ try:
             if answer in valid_answers:
                 print('Ожидайте')
 
-                import firstrunsetup as frs
+                import nullaLowLevel.firstrunsetup as frs
                 frs.start()
 
             else:
@@ -39,7 +39,7 @@ try:
 
         else:
             print('Выход')
-        sys.exit()
+            sys.exit()
 
     tab_str = '    '
 
@@ -99,7 +99,6 @@ try:
     lst = []
 
     for t in range(0, number, 1):
-        print('хуй пизда сковорода')
         first_part = last_messages.author.nickname[t] + ': '
 
         if last_messages.content[t] is None:
