@@ -1,7 +1,7 @@
 *.lnk
 **/__pycache__/
-*.sublime*
-web/static/upload/
+web/
 *.json
 *.zip
 /nullaLowLevel/protection
+*.txt

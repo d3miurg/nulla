@@ -1,14 +1,6 @@
-from PyQt6 import QtCore
 from PyQt6 import QtWidgets
-from PyQt6 import QtGui
-import threading
-import sys
-import queue
-
-print('Соединение с Амино')
 from nullaLowLevel import core
-
-core.start()
+import os
 
 def update_chat(chat_id, chat_list, message_generator):
     global last_messages
@@ -89,17 +81,20 @@ def login(email, password, error, page_elements):
             button.place(relx = .1, rely = i)
             i += .1
 
+if __name__ == '__main__':
+    print('Подключение к Амино')
+    core.start()
+    print('Загрузка окна')
+    app = QtWidgets.QApplication([])
+    screen_size = app.screens()[0].availableGeometry()
+    mainWindow = QtWidgets.QWidget()
+    mainWindow.setGeometry(int(screen_size.width()/4), int(screen_size.height()/4), int(screen_size.width()/2), int(screen_size.height()/2))
+    mainWindow.setWindowTitle('Nulla Client')
+    mainWindow.show()
+    app.exec()
 
-print('Загрузка окна')
-app = QtWidgets.QApplication([])
-mainWindow = QtWidgets.QWidget()
-mainWindow.setGeometry(100, 100, 500, 500)
-mainWindow.setWindowTitle('Nulla Client')
-mainWindow.show()
-app.exec()
-
-print('Выход (закрытие окна)')
-sys.exit(core.stop())
+    print('Выход (закрытие окна)')
+    os._exit(core.stop())
 
 '''login_var = tkinter.StringVar()
 password_var = tkinter.StringVar()

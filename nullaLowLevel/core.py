@@ -297,3 +297,4 @@ def push_write(chat_id):
 @handle_errors
 def stop():
     user.logout()
+    return 0
