@@ -42,6 +42,12 @@ def handle_errors(func):
 
 
 @handle_errors
+def no_connection_start():
+    global user
+    user = None
+
+
+@handle_errors
 def start():
     global amino
     global user
