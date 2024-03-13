@@ -1,148 +1,134 @@
 from PyQt6 import QtWidgets
+from PyQt6 import QtCore
 import core
 import os
-import threading
 
 app = QtWidgets.QApplication([])
 
+main_window = QtWidgets.QMainWindow()
+screen_size = app.screens()[0].availableGeometry()
+main_window.setGeometry(int(screen_size.width() / 4),
+                        int(screen_size.height() / 4),
+                        int(screen_size.width() / 2),
+                        int(screen_size.height() / 2))
+main_window.setFixedSize(main_window.width(), main_window.height())
+main_window.setWindowTitle('Nulla Client')
+main_window.hide()
 
-class MainWindow(QtWidgets.QMainWindow):
+login_form = QtWidgets.QWidget(main_window)
+login_input = QtWidgets.QLineEdit(login_form)
+password_input = QtWidgets.QLineEdit(login_form)
+accept_button = QtWidgets.QPushButton('Войти', login_form)
+layout = QtWidgets.QVBoxLayout(login_form)
+layout.addWidget(login_input)
+layout.addWidget(password_input)
+layout.addWidget(accept_button)
+login_form.setLayout(layout)
+login_form.setGeometry(int(main_window.width() / 3),
+                       0,
+                       int(main_window.width() / 3),
+                       int(main_window.height()))
+
+communities_container = QtWidgets.QListWidget(main_window)
+communities = {}
+communities_container.setGeometry(0,
+                                  0,
+                                  int(main_window.width() / 3),
+                                  int(main_window.height()))
+communities_container.hide()
+
+chats_container = QtWidgets.QListWidget(main_window)
+chats = {}
+chat_id = 1
+chats_container.setGeometry(int(main_window.width() / 3),
+                            0,
+                            int(main_window.width() / 3),
+                            int(main_window.height()))
+chats_container.hide()
+
+messages_container = QtWidgets.QWidget(main_window)
+last_message = []
+messages_list = QtWidgets.QListWidget(messages_container)
+input_field = QtWidgets.QTextEdit(messages_container)
+send_button = QtWidgets.QPushButton('Отправить', messages_container)
+layout = QtWidgets.QVBoxLayout(messages_container)
+layout.addWidget(messages_list)
+layout.addWidget(input_field)
+layout.addWidget(send_button)
+messages_container.setLayout(layout)
+messages_container.setGeometry(int(main_window.width() / 3),
+                               0,
+                               int(main_window.width() * 2 / 3),
+                               int(main_window.height()))
+messages_container.hide()
+
+
+class Updater(QtCore.QThread):
     def __init__(self):
         super().__init__()
 
-        screen_size = app.screens()[0].availableGeometry()
-        self.setGeometry(int(screen_size.width() / 4),
-                         int(screen_size.height() / 4),
-                         int(screen_size.width() / 2),
-                         int(screen_size.height() / 2))
-        self.setFixedSize(self.width(), self.height())
-
-        self.setWindowTitle('Nulla Client')
-
-
-class ChatContainer(QtWidgets.QWidget):
-    def __init__(self, parent, chat_id):
-        super().__init__(parent)
-        self.parent = parent
-        self.last = []
-        self.chat_id = chat_id
-
-        self.messages_list = QtWidgets.QListWidget(self)
-        input_field = QtWidgets.QTextEdit(self)
-        send_button = QtWidgets.QPushButton('Отправить', self)
-
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(self.messages_list)
-        layout.addWidget(input_field)
-        layout.addWidget(send_button)
-        self.setLayout(layout)
-
-        self.setGeometry(int(parent.width() / 3),
-                         0,
-                         int(parent.width() * 2 / 3),
-                         int(parent.height()))
-
-        chat_thread = threading.Thread(target=self.get_message)
-        chat_thread.start()
-
-    def get_message(self):
+    def run(self):
+        global last_message
+        global messages_list
         while True:
-            last_message = core.get_messages(self.chat_id, 1)
-            if last_message != self.last:
-                self.messages_list.addItem(last_message[0])
-                self.last = last_message
+            current_message = core.get_messages(chat_id, 1)
+            if current_message != last_message:
+                messages_list.addItem(current_message[0][0])
+                messages_list.scrollToBottom()
+                last_message = current_message
 
 
-class ChatsList(QtWidgets.QListWidget):
-    def __init__(self, parent, chats):
-        super().__init__(parent)
-        self.parent = parent
-        self.chats = chats
+def login():
+    global communities
+    email = login_input.text()
+    password = password_input.text()
+    status = core.login(email, password)
 
-        self.setGeometry(int(parent.width() / 3),
-                         0,
-                         int(parent.width() / 3),
-                         int(parent.height()))
+    if status == '200':
+        login_form.hide()
+        communities = core.get_communities()
+        communities_container.addItems(communities.keys())
+        communities_container.show()
 
-        self.itemClicked.connect(self.enter_chat)
-
-    def update(self, chats):
-        self.clear()
-        self.addItems(chats.keys())
-        self.chats = chats
-
-    def enter_chat(self):
-        selected_chat = self.selectedItems()[0].text()
-        chat_id = self.chats[selected_chat]
-        chat = ChatContainer(self.parent, chat_id)
-        chat.show()
-        self.hide()
+    else:
+        print(status)
 
 
-class CommunitiesList(QtWidgets.QListWidget):
-    def __init__(self, parent, communities):
-        super().__init__(parent)
-        self.parent = parent
-        self.communities = communities
-
-        self.chats_list = ChatsList(self.parent, [])
-        self.chats_list.hide()
-
-        self.addItems(list(communities.keys()))
-
-        self.itemClicked.connect(self.enter_community)
-
-        self.setGeometry(0,
-                         0,
-                         int(parent.width() / 3),
-                         int(parent.height()))
-
-    def enter_community(self):
-        community_name = self.selectedItems()[0].text()
-        community_id = self.communities[community_name]
-        chats = core.enter_community(community_id)
-        self.chats_list.update(chats)
-        self.chats_list.show()
+def enter_community():
+    global chats
+    messages_container.hide()
+    community_name = communities_container.selectedItems()[0].text()
+    community_id = communities[community_name]
+    chats = core.enter_community(community_id)
+    chats_container.clear()
+    chats_container.addItems(chats.keys())
+    chats_container.show()
 
 
-class LoginForm(QtWidgets.QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.parent = parent
+def enter_chat():
+    global last_message
+    global chat_id
+    global chats
 
-        login_input = QtWidgets.QLineEdit(self)
-        password_input = QtWidgets.QLineEdit(self)
-        accept_button = QtWidgets.QPushButton('Войти', self)
+    chat_name = chats_container.selectedItems()[0].text()
+    chat_id = chats[chat_name]
 
-        layout = QtWidgets.QGridLayout(self)
-        layout.addWidget(login_input, 0, 0)
-        layout.addWidget(password_input, 1, 0)
-        layout.addWidget(accept_button, 3, 0)
-        self.setLayout(layout)
+    updater = Updater()
+    updater.start()
 
-        self.setGeometry(int(parent.width() / 3),
-                         0,
-                         int(parent.width() / 3),
-                         int(parent.height()))
+    messages_list.clear()
+    last_messages = core.get_messages(chat_id, 25)
+    [messages_list.addItem(n[0]) for n in last_messages]
+    messages_list.scrollToBottom()
+    chats_container.hide()
+    messages_container.show()
 
-        accept_button.pressed.connect(lambda: self.login(login_input,
-                                                         password_input))
 
-    def login(self, login_input, password_input):
-        status = core.login(login_input.text(), password_input.text())
-        if status == '200':
-            communities = core.get_communities()
-            communities_list = CommunitiesList(self.parent, communities)
-            communities_list.show()
-            self.hide()
-        else:
-            print(status)
-
+accept_button.clicked.connect(login)
+communities_container.itemClicked.connect(enter_community)
+chats_container.itemClicked.connect(enter_chat)
 
 if __name__ == '__main__':
-    main_window = MainWindow()
-    login_form = LoginForm(main_window)
-
     main_window.show()
     app.exec()
 

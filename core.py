@@ -90,7 +90,7 @@ def get_messages(chat_id, count):
 
     current_iteration = []
 
-    for t in range(count - 1):
+    for t in range(len(new_messages.content)):
         first_part = new_messages.author.nickname[t] + ': '
 
         if new_messages.content[t] is None:
