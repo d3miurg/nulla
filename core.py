@@ -110,46 +110,16 @@ def get_messages(chat_id, count):
 
 
 @handle_errors
-def return_message(chat_id):
-
-    repr_file = open('chat_repr.txt', 'w', encoding='utf-8')
-
-    while True:
-        if not message_queue.empty():
-            message = message_queue.get()
-            repr_file.write(message + '\n')
-            yield message
-
-        else:
-            yield None
-
-
-@handle_errors
-def send_message(chat_id, message=None, tk_var=None, tk_error=None):
+def send_message(chat_id, message=None):
     try:
-        send_ready = ''
-        if tk_var:
-            send_ready = tk_var.get()
-            tk_var.set('')
+        if message:
+            sub_user.send_message(chat_id, message)
+            return '200'
 
-        elif message:
-            send_ready = message
-
-        else:
-            if tk_error:
-                tk_error.set('Нельзя отправить пустое сообщение')
-
-            else:
-                return 'Нельзя отправить пустое сообщение'
-
-        sub_user.send_message(chat_id, send_ready)
+        return 'Сообщение пустое'
 
     except amino.lib.util.exceptions.ChatViewOnly:
-        if tk_error:
-            tk_error.set('В чате установлен режим чтения')
-
-        else:
-            return 'В чате установлен режим чтения'
+        return 'В чате установлен режим чтения'
 
 
 @handle_errors

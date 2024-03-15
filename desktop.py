@@ -49,7 +49,7 @@ chats_container.hide()
 messages_container = QtWidgets.QWidget(main_window)
 last_message = []
 messages_list = QtWidgets.QListWidget(messages_container)
-input_field = QtWidgets.QTextEdit(messages_container)
+input_field = QtWidgets.QLineEdit(messages_container)
 send_button = QtWidgets.QPushButton('Отправить', messages_container)
 layout = QtWidgets.QVBoxLayout(messages_container)
 layout.addWidget(messages_list)
@@ -124,9 +124,17 @@ def enter_chat():
     messages_container.show()
 
 
+def send_message():
+    message = input_field.text()
+    print(chat_id, message)
+    status = core.send_message(chat_id, message)
+    print(status)
+
+
 accept_button.clicked.connect(login)
 communities_container.itemClicked.connect(enter_community)
 chats_container.itemClicked.connect(enter_chat)
+send_button.clicked.connect(send_message)
 
 if __name__ == '__main__':
     main_window.show()
